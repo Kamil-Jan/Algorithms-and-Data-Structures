@@ -6,6 +6,9 @@ Merge Sort algorithm.
 
 
 def MergeSort(arr, left, right):
+    """
+    Merge Sort using recursion.
+    """
     if left >= right:
         return
     mid = (left + right) // 2
@@ -13,7 +16,23 @@ def MergeSort(arr, left, right):
     MergeSort(arr, mid + 1, right)
     Merge(arr, left, right, mid)
 
+def TwoWayMergeSort(arr, n):
+    """
+    Iterative method for Merge Sort.
+    """
+    step = 1
+    while step < n:
+        for i in range(0, n, 2 * step):
+            left = i
+            right = i + 2 * step - 1
+            mid = i + step - 1
+            Merge(arr, left, right, mid)
+        step *= 2
+
 def Merge(arr, left, right, mid):
+    """
+    Merging two sorted lists.
+    """
     L = arr[left: mid + 1]
     R = arr[mid + 1: right + 1]
 
