@@ -1,3 +1,10 @@
+"""
+
+Quick Sort algorithm.
+
+"""
+
+
 def Partition(arr, l, h):
     pivot = arr[h]
     i = l

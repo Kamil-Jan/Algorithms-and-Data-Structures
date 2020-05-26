@@ -10,7 +10,7 @@ def counting_sort(arr, exp):
     output = [0 for _ in range(n)]
     count = [0 for _ in range(10)]
 
-    # Store count of occurrences in count[]
+    # Store count of occurrences in count
     for num in arr:
         index = num // exp
         count[index % 10] += 1
@@ -28,9 +28,10 @@ def counting_sort(arr, exp):
         count[index % 10] -= 1
         i -= 1
 
-    # Copying the output array to arr[],
+    # Copying the output array to arr,
     # so that arr now contains sorted numbers
-    arr = output
+    for i in range(len(arr)):
+        arr[i] = output[i]
 
 def radix_sort(arr):
     max_num = max(arr)
