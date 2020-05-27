@@ -4,10 +4,10 @@ from Heap import MinHeap as mh
 
 
 
-def MergePattern(lists):
+def MergeLists(lists):
     com_func = lambda x, y: len(x) < len(y)
 
-    mh.Build_Heap(lists, com_func)
+    mh.build(lists, com_func)
     cost = 0
     while len(lists) > 1:
         smallest_list = mh.extract_root(lists, com_func)
