@@ -5,49 +5,50 @@ class MaxHeap:
     Functions: Heapify, Build_Heap, Heap_Sort
     """
     @classmethod
-    def Heapify(cls, arr, n, i):
+    def Heapify(cls, arr, n, i, com_func):
         l = 2 * i + 1 # left child
         r = 2 * i + 2 # right child
         largest = i
         left = l < n
         right = r < n
 
-        # check if child bigger than parent
-        if left and arr[l] >= arr[largest]:
+        # check if a children are greater than parent
+        if left and com_func(arr[l], arr[largest]):
             largest = l
 
-        if right and arr[r] > arr[largest]:
+        if right and com_func(arr[r], arr[largest]):
             largest = r
 
         if largest != i:
             arr[i], arr[largest] = arr[largest], arr[i] # swap parent with largest child
-            cls.Heapify(arr, n, largest) # look at a child
+            cls.Heapify(arr, n, largest, com_func) # look at a child
 
     @classmethod
-    def Build_Heap(cls, array):
+    def Build_Heap(cls, array, com_func=lambda x, y: x > y):
         for i in range(len(array) // 2, -1, -1):
-            cls.Heapify(array, len(array), i)
+            cls.Heapify(array, len(array), i, com_func)
 
     @classmethod
-    def Heap_Sort(cls, array):
+    def Heap_Sort(cls, array, com_func=lambda x, y: x > y):
         cls.Build_Heap(array)
         for i in range(len(array) - 1, -1, -1):
             array[0], array[i] = array[i], array[0]
-            cls.Heapify(array, i, 0)
+            cls.Heapify(array, i, 0, com_func)
 
     @classmethod
-    def insert(cls, x, arr):
+    def insert(cls, x, arr, com_func=lambda x, y: x > y):
         arr.append(x)
         i = (len(arr) - 2) // 2
-        while i >= 0 and arr[i] < x:
-            cls.Heapify(arr, len(arr), i)
+        while i >= 0 and com_func(x, arr[i]):
+            cls.Heapify(arr, len(arr), i, com_func)
             i = (i - 1) // 2
 
     @classmethod
-    def extract_root(cls, arr):
+    def extract_root(cls, arr, com_func=lambda x, y: x > y):
         arr[0], arr[-1] = arr[-1], arr[0]
-        arr.pop()
-        cls.Heapify(arr, len(arr) - 1, 0)
+        root = arr.pop()
+        cls.Heapify(arr, len(arr), 0, com_func)
+        return root
 
 
 class MinHeap(MaxHeap):
@@ -57,29 +58,18 @@ class MinHeap(MaxHeap):
     Functions: Heapify, Build_Heap, Heap_Sort
     """
     @classmethod
-    def Heapify(cls, arr, n, i):
-        l = 2 * i + 1 # left child
-        r = 2 * i + 2 # right child
-        minimal = i
-        left = l < n
-        right = r < n
-
-        # check if child bigger than parent
-        if left and arr[l] <= arr[minimal]:
-            minimal = l
-
-        if right and arr[r] < arr[minimal]:
-            minimal = r
-
-        if minimal != i:
-            arr[i], arr[minimal] = arr[minimal], arr[i] # swap parent with largest child
-            cls.Heapify(arr, n, minimal)
+    def Build_Heap(cls, array, com_func=lambda x, y: x < y):
+        super().Build_Heap(array, com_func)
 
     @classmethod
-    def insert(cls, x, arr):
-        arr.append(x)
-        i = (len(arr) - 2) // 2
-        while i >= 0 and arr[i] > x:
-            cls.Heapify(arr, len(arr), i)
-            i = (i - 1) // 2
+    def Heap_Sort(cls, array, com_func=lambda x, y: x < y):
+        super().Heap_Sort(array, com_func)
+
+    @classmethod
+    def insert(cls, x, arr, com_func=lambda x, y: x < y):
+        super().insert(x, arr, com_func)
+
+    @classmethod
+    def extract_root(cls, arr, com_func=lambda x, y: x < y):
+        return super().extract_root(arr, com_func)
 
