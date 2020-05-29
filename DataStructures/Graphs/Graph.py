@@ -12,14 +12,18 @@ class Vertex(object):
     def get_connections(self):
         return list(self.adjacent.keys())
 
+    def get_weighted_connections(self):
+        return list(self.adjacent.items())
+
     def get_weight(self, neighbour):
         return self.adjacent[neighbour]
 
 
 class Graph(object):
-    def __init__(self, graph_dict=None, directed=False):
+    def __init__(self, graph_dict=None, directed=False, weighted=False):
         self.__graph_dict = dict()
         self.directed = directed
+        self.weighted = weighted
         if graph_dict:
             self.__generate_dict(graph_dict)
 
@@ -171,24 +175,31 @@ class Graph(object):
         """
         Finds shortest path from 'start' to 'end'.
         """
-        dist = {start: [start]}
-        q = deque(start)
-        while len(q):
-            at = q.popleft()
-            for next in self.__graph_dict[at].get_connections():
-                if next not in dist:
-                    dist[next] = [dist[at], next]
-                    q.append(next)
-        return dist.get(end)
+        if not self.weighted:
+            dist = {start: [start]}
+            q = deque(start)
+            while len(q):
+                at = q.popleft()
+                for next in self.__graph_dict[at].get_connections():
+                    if next not in dist:
+                        dist[next] = [dist[at], next]
+                        q.append(next)
+            return dist.get(end)
 
     def __generate_dict(self, graph_dict):
         """
         Generates self.__graph_dict from 'graph_dict'.
         """
-        for vertex in graph_dict:
-            self.add_vertex(vertex)
-            for neighbor in graph_dict[vertex]:
-                self.add_edge(vertex, neighbor)
+        if self.weighted:
+            for vertex in graph_dict:
+                self.add_vertex(vertex)
+                for neighbor, weight in graph_dict[vertex]:
+                    self.add_edge(vertex, neighbor, weight)
+        else:
+            for vertex in graph_dict:
+                self.add_vertex(vertex)
+                for neighbor in graph_dict[vertex]:
+                    self.add_edge(vertex, neighbor)
 
     def __generate_edges(self):
         """
@@ -196,16 +207,16 @@ class Graph(object):
         Edges are represented as tuples
         with one or two vertices.
         """
-        edges = []
+        edges = dict()
         if not self.directed:
             for vertex in self.__graph_dict:
-                for neighbour in self.__graph_dict[vertex].get_connections():
+                for neighbour, w in self.__graph_dict[vertex].get_weighted_connections():
                     if (neighbour, vertex) not in edges:
-                        edges.append((vertex, neighbour))
+                        edges[(vertex, neighbour)] = w
         else:
             for vertex in self.__graph_dict:
-                for neighbour in self.__graph_dict[vertex].get_connections():
-                    edges.append((vertex, neighbour))
+                for neighbour, w in self.__graph_dict[vertex].get_weighted_connections():
+                    edges[(vertex, neighbour)] = w
         return edges
 
     def __str__(self):
@@ -219,14 +230,15 @@ class Graph(object):
 
 
 def main():
-    g = {"A": ["B", "C","D"],
-         "B": ["D","K"],
-         "C": ["D","K"],
-         "D": ["K"],
+    g = {"A": [("B",2), ("C",2),("D",4)],
+         "B": [("D",1),("K",3)],
+         "C": [("D",1),("K",3)],
+         "D": [("K",2)],
          "F": []}
 
-    G = Graph(g, directed=True)
-    print(len(G.find_all_paths("B","K")))
+    G = Graph(g, directed=True, weighted=True)
+    print(G.edges())
+    print(len(G.find_all_paths("A","K")))
 
 if __name__ == "__main__":
     main()
