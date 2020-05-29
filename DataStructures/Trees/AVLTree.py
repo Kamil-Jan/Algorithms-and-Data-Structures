@@ -78,19 +78,23 @@ class AVLTree:
     def __init__(self, root):
         self.root = TreeNode(val=root)
 
-    def search(self, number):
+    def search(self, number, possible_parent=False):
         """
         Searches the number in a Tree.
         Returns: TreeNode
         """
-        node = self.root
+        node = prev_node = self.root
         while node:
             if number > node.val:
+                prev_node = node
                 node = node.right
             elif number == node.val:
                 return node
             else:
+                prev_node = node
                 node = node.left
+        if possible_parent:
+            return prev_node
         return None
 
     def find_min(self):
@@ -115,6 +119,42 @@ class AVLTree:
                 return node
             node = node.right
 
+    def successor(self, node):
+        """
+        Returns next-larger node.
+        """
+        tree_node = self.search(node, possible_parent=True)
+        if tree_node:
+            if tree_node.right and tree_node.val <= node:
+                right_subtree = tree_node.right
+                while right_subtree.left:
+                    right_subtree = right_subtree.left
+                return right_subtree
+            else:
+                while tree_node:
+                    if tree_node.val > node:
+                        return tree_node
+                    tree_node = tree_node.parent
+                return
+
+    def predecessor(self, node):
+        """
+        Returns next-smaller node.
+        """
+        tree_node = self.search(node, possible_parent=True)
+        if tree_node:
+            if tree_node.left and tree_node.val >= node:
+                left_subtree = tree_node.left
+                while left_subtree.right:
+                    left_subtree = left_subtree.right
+                return left_subtree
+            else:
+                while tree_node:
+                    if tree_node.val < node:
+                        return tree_node
+                    tree_node = tree_node.parent
+                return
+
     def insert(self, number):
         """
         Inserts a given number into a Tree.
@@ -138,7 +178,6 @@ class AVLTree:
                 # print(f"{number}: already in a Tree.")
                 return
             elif number > node.val:
-                # Check if a node.right is None
                 if not node.right:
                     # node.right is a leaf
                     node.right = TreeNode(val=number)
@@ -146,7 +185,6 @@ class AVLTree:
                     return node
                 node = node.right
             else:
-                # Check if a node.left is None
                 if not node.left:
                     # node.left is a leaf
                     node.left = TreeNode(val=number)
@@ -164,8 +202,10 @@ class AVLTree:
         if abs(self.get_bf(node)) > 1:
             self._balance(node)
             return
-        node.height = self.count_height(node)
-        self._inspect_insert(node.parent)
+        new_height = self.count_height(node)
+        if new_height != node.height:
+            node.height = new_height
+            self._inspect_insert(node.parent)
 
     def get_height(self, node):
         """
@@ -219,7 +259,7 @@ class AVLTree:
         """
         A = node
         B = A.left
-        # Update children
+        # Update parents
         if A.parent:
             if A.parent.left == A:
                 A.parent.left = B
@@ -230,11 +270,10 @@ class AVLTree:
 
         if B.right:
             B.right.parent = A
-
-        A.left, B.right = B.right, A
-
-        # Update parents
         B.parent, A.parent = A.parent, B
+
+        # Rotation
+        A.left, B.right = B.right, A
 
         A.height = self.count_height(A)
         B.height = self.count_height(B)
@@ -250,7 +289,7 @@ class AVLTree:
         """
         A = node
         B = A.right
-        # Update children
+        # Update parents
         if A.parent:
             if A.parent.left == A:
                 A.parent.left = B
@@ -261,11 +300,10 @@ class AVLTree:
 
         if B.left:
             B.left.parent = A
-
-        A.right, B.left = B.left, A
-
-        # Update parents
         B.parent, A.parent = A.parent, B
+
+        # Rotation
+        A.right, B.left = B.left, A
 
         A.height = self.count_height(A)
         B.height = self.count_height(B)
@@ -282,6 +320,7 @@ class AVLTree:
         A = node
         B = A.left
         C = B.right
+        # Update parents
         if A.parent:
             if A.parent.left == A:
                 A.parent.left = C
@@ -294,10 +333,10 @@ class AVLTree:
             C.right.parent = A
         if C.left:
             C.left.parent = B
-        A.left, B.right, C.right, C.left = C.right, C.left, A, B
-
-        # Update parents
         B.parent, A.parent, C.parent = C, C, A.parent
+
+        # Rotation
+        A.left, B.right, C.right, C.left = C.right, C.left, A, B
 
         A.height = self.count_height(A)
         B.height = self.count_height(B)
@@ -316,6 +355,7 @@ class AVLTree:
         A = node
         B = A.right
         C = B.left
+        # Update parents
         if A.parent:
             if A.parent.left == A:
                 A.parent.left = C
@@ -328,11 +368,10 @@ class AVLTree:
             C.right.parent = B
         if C.left:
             C.left.parent = A
-
-        A.right, B.left, C.right, C.left = C.left, C.right, B, A
-
-        # Update parents
         B.parent, A.parent, C.parent = C, C, A.parent
+
+        # Rotation
+        A.right, B.left, C.right, C.left = C.left, C.right, B, A
 
         A.height = self.count_height(A)
         B.height = self.count_height(B)
@@ -372,11 +411,11 @@ def average_time(func=None, *, num_times=3):
 @average_time(num_times=10)
 @timer
 def main():
-    t = AVLTree(random.randint(1, 100_000))
-    for i in range(1, 10_000):
-        i = random.randint(1, 100_000)
-        t.insert(i)
-
+    t = AVLTree(1)
+    keys = list(range(1, 10_000))
+    random.shuffle(keys)
+    for num in keys:
+        t.insert(num)
 
 if __name__ == "__main__":
     main()
