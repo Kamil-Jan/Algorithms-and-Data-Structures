@@ -73,22 +73,27 @@ class AVLTree:
     """
     AVL Tree Data Structure.
     Attributes: root
-    Function: insert, search, find_min, find_max
+    Function: insert, delete, search,
+              find_min, find_max,
+              successor, predecessor
     """
-    def __init__(self, root):
-        self.root = TreeNode(val=root)
+    def __init__(self, root=None):
+        if root:
+            self.root = TreeNode(val=root)
+        else:
+            self.root = None
 
-    def search(self, number, possible_parent=False):
+    def search(self, key, possible_parent=False):
         """
-        Searches the number in a Tree.
+        Searches the key in a Tree.
         Returns: TreeNode
         """
         node = prev_node = self.root
         while node:
-            if number > node.val:
+            if key > node.val:
                 prev_node = node
                 node = node.right
-            elif number == node.val:
+            elif key == node.val:
                 return node
             else:
                 prev_node = node
@@ -99,7 +104,7 @@ class AVLTree:
 
     def find_min(self):
         """
-        Finds a minimal number in a Tree.
+        Finds a minimal key in a Tree.
         Returns: TreeNode
         """
         node = self.root
@@ -110,7 +115,7 @@ class AVLTree:
 
     def find_max(self):
         """
-        Finds a maximum number in a Tree.
+        Finds a maximum key in a Tree.
         Returns: TreeNode
         """
         node = self.root
@@ -119,83 +124,130 @@ class AVLTree:
                 return node
             node = node.right
 
-    def successor(self, node):
+    def successor(self, key):
         """
-        Returns next-larger node.
+        Returns node with next-larger value of a given 'key'.
         """
-        tree_node = self.search(node, possible_parent=True)
+        tree_node = self.search(key, possible_parent=True)
         if tree_node:
-            if tree_node.right and tree_node.val <= node:
+            if tree_node.right and tree_node.val <= key:
                 right_subtree = tree_node.right
                 while right_subtree.left:
                     right_subtree = right_subtree.left
                 return right_subtree
             else:
                 while tree_node:
-                    if tree_node.val > node:
+                    if tree_node.val > key:
                         return tree_node
                     tree_node = tree_node.parent
                 return
 
-    def predecessor(self, node):
+    def predecessor(self, key):
         """
-        Returns next-smaller node.
+        Returns node with next-smaller value of a given 'key'.
         """
-        tree_node = self.search(node, possible_parent=True)
+        tree_node = self.search(key, possible_parent=True)
         if tree_node:
-            if tree_node.left and tree_node.val >= node:
+            if tree_node.left and tree_node.val >= key:
                 left_subtree = tree_node.left
                 while left_subtree.right:
                     left_subtree = left_subtree.right
                 return left_subtree
             else:
                 while tree_node:
-                    if tree_node.val < node:
+                    if tree_node.val < key:
                         return tree_node
                     tree_node = tree_node.parent
                 return
 
-    def insert(self, number):
+    def insert(self, key):
         """
-        Inserts a given number into a Tree.
+        Inserts a given key into a Tree.
         """
-        node = self._insert(number)
-        self._inspect_insert(node)
+        if not self.root:
+            self.root = TreeNode(val=key)
+            return
+        node = self._insert(key)
+        self._inspect_changes(node)
 
-    def _insert(self, number):
+    def _insert(self, key):
         """
-        Inserts a given number into a Tree.
-
-        Check the root of the tree. If the number
-        is greater than the root, we look at the right subtree.
-        If less - left. Repeat the operation until the number falls
-        into place of the leaf.
+        Helper function for insertion.
         """
         node = self.root
         while True:
-            # Check if a number is greater than node.
-            if number == node.val:
-                # print(f"{number}: already in a Tree.")
+            # Check if a key is greater than node.
+            if key == node.val:
+                # print(f"{key}: already in a Tree.")
                 return
-            elif number > node.val:
+            elif key > node.val:
                 if not node.right:
                     # node.right is a leaf
-                    node.right = TreeNode(val=number)
+                    node.right = TreeNode(val=key)
                     node.right.parent = node
                     return node
                 node = node.right
             else:
                 if not node.left:
                     # node.left is a leaf
-                    node.left = TreeNode(val=number)
+                    node.left = TreeNode(val=key)
                     node.left.parent = node
                     return node
                 node = node.left
 
-    def _inspect_insert(self, node):
+    def delete(self, key):
         """
-        Updates heights after insertion and
-        checks imbalanced nodes.
+        Deletes a node with 'key' value from a Tree.
+        """
+        node = self.search(key)
+        if node:
+            self._delete(node)
+
+    def _delete(self, node):
+        """
+        Helper function for deletion.
+        """
+        if node.height == 1: # node has no children
+            if node.parent:
+                if node.parent.left == node:
+                    node.parent.left = None
+                else:
+                    node.parent.right = None
+            else:
+                self.root = None
+            new_node = node.parent
+            node = None
+        elif node.left == None: # node has only right child
+            if node.parent:
+                if node.parent.left == node:
+                    node.parent.left = node.right
+                else:
+                    node.parent.right = node.right
+            else:
+                self.root = node.right
+            node.right.parent = node.parent
+            new_node = node.parent
+            node = None
+        elif node.right == None: # node has only left child
+            if node.parent:
+                if node.parent.left == node:
+                    node.parent.left = node.left
+                else:
+                    node.parent.right = node.left
+            else:
+                self.root = node.left
+            node.left.parent = node.parent
+            new_node = node.parent
+            node = None
+        else: # node has 2 children
+            next_larger = self.successor(node.val)
+            node.val = next_larger.val
+            return self._delete(next_larger)
+        self._inspect_changes(new_node)
+
+    def _inspect_changes(self, node):
+        """
+        Updates heights and checks imbalanced nodes.
         """
         if not node:
             return
@@ -205,7 +257,7 @@ class AVLTree:
         new_height = self.count_height(node)
         if new_height != node.height:
             node.height = new_height
-            self._inspect_insert(node.parent)
+            self._inspect_changes(node.parent)
 
     def get_height(self, node):
         """
@@ -230,7 +282,7 @@ class AVLTree:
 
     def get_bf(self, node):
         """
-        Counts _balance factor of a given node.
+        Counts balance factor of a given node.
         """
         return self.get_height(node.left) - self.get_height(node.right)
 
@@ -239,12 +291,12 @@ class AVLTree:
         Decides how subtree should be rotated.
         """
         if self.get_bf(node) == 2: # Left-heavy
-            if self.get_bf(node.left) == 1:
+            if self.get_bf(node.left) >= 0:
                 self._LL_rotate(node) # Left-Left heavy
             else: # Left-Right heavy
                 self._LR_rotate(node)
         elif self.get_bf(node) == -2: # Right-heavy
-            if self.get_bf(node.right) == -1: # Right-Right heavy
+            if self.get_bf(node.right) <= 0: # Right-Right heavy
                 self._RR_rotate(node)
             else: # Right-Left heavy
                 self._RL_rotate(node)
@@ -277,7 +329,7 @@ class AVLTree:
 
         A.height = self.count_height(A)
         B.height = self.count_height(B)
-        self._inspect_insert(B.parent)
+        self._inspect_changes(B.parent)
 
     def _RR_rotate(self, node):
         """
@@ -307,15 +359,15 @@ class AVLTree:
 
         A.height = self.count_height(A)
         B.height = self.count_height(B)
-        self._inspect_insert(B.parent)
+        self._inspect_changes(B.parent)
 
     def _LR_rotate(self, node):
         """
         Left-Right rotation.
 
-          A         A       C
-        B    ==>  C   ==> B   A
-          C     B
+          A        C
+        B    ==> B   A
+          C
         """
         A = node
         B = A.left
@@ -342,15 +394,15 @@ class AVLTree:
         B.height = self.count_height(B)
         C.height = self.count_height(C)
 
-        self._inspect_insert(C.parent)
+        self._inspect_changes(C.parent)
 
     def _RL_rotate(self, node):
         """
         Right-Left rotation.
 
-        A        A           C
-          B  ==>   C   ==> A   B
-        C            B
+        A          C
+          B  ==> A   B
+        C
         """
         A = node
         B = A.right
@@ -377,7 +429,7 @@ class AVLTree:
         B.height = self.count_height(B)
         C.height = self.count_height(C)
 
-        self._inspect_insert(C.parent)
+        self._inspect_changes(C.parent)
 
 
 def timer(func):
@@ -408,14 +460,30 @@ def average_time(func=None, *, num_times=3):
         return decorator_repeat
     return decorator_repeat(func)
 
-@average_time(num_times=10)
 @timer
 def main():
-    t = AVLTree(1)
     keys = list(range(1, 10_000))
     random.shuffle(keys)
+
+    t = AVLTree()
+    # insertion
     for num in keys:
         t.insert(num)
+    print(t.find_max())
+    print(t.find_min())
+
+    number = random.randint(1, 10_000)
+    # searching
+    print(t.search(number))
+    # successor / predecessor
+    print(t.successor(number))
+    print(t.predecessor(number))
+
+    random.shuffle(keys)
+    # deletion
+    for num in keys:
+        t.delete(num)
+    print(t.root) # None
 
 if __name__ == "__main__":
     main()
