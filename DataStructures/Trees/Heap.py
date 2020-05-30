@@ -36,10 +36,10 @@ class MaxHeap:
             cls.heapify(array, i, 0, com_func)
 
     @classmethod
-    def insert(cls, x, arr, com_func=lambda x, y: x > y):
-        arr.append(x)
+    def insert(cls, key, arr, com_func=lambda x, y: x > y):
+        arr.append(key)
         i = (len(arr) - 2) // 2
-        while i >= 0 and com_func(x, arr[i]):
+        while i >= 0 and com_func(key, arr[i]):
             cls.heapify(arr, len(arr), i, com_func)
             i = (i - 1) // 2
 
