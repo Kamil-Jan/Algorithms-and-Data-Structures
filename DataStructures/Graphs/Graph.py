@@ -1,12 +1,16 @@
+import sys
+sys.path.insert(1, "..\\Trees")
+from Heap import MinHeap
 from collections import deque
 
 
 class Vertex(object):
-    def __init__(self, val=None):
+    def __init__(self, id, val=None):
+        self.id = id
         self.val = val
         self.adjacent = dict()
 
-    def add_neighbor(self, neighbour, weight=0):
+    def add_neighbor(self, neighbour, weight=1):
         self.adjacent[neighbour] = weight
 
     def get_connections(self):
@@ -17,6 +21,10 @@ class Vertex(object):
 
     def get_weight(self, neighbour):
         return self.adjacent[neighbour]
+
+    def __str__(self):
+        string = f"Vertex: id={self.id}, val={self.val}"
+        return string
 
 
 class Graph(object):
@@ -40,7 +48,7 @@ class Graph(object):
         Otherwise nothing has to be done.
         """
         if vertex not in self.__graph_dict:
-            new_vertex = Vertex(val)
+            new_vertex = Vertex(vertex, val)
             self.__graph_dict[vertex] = new_vertex
             return vertex
 
@@ -100,7 +108,7 @@ class Graph(object):
         """
         return self.__generate_edges()
 
-    def add_edge(self, frm, to, weight=0):
+    def add_edge(self, frm, to, weight=1):
         """
         Adds an edge into a graph.
         """
@@ -149,7 +157,7 @@ class Graph(object):
 
     def find_all_paths_except(self, start, end, ignore, path=[]):
         """
-        Finds all possible paths from 'start' to 'end'.
+        Finds all possible paths from 'start' to 'end' except a given vertex.
         """
         path = path + [start]
         if start == end:
@@ -165,6 +173,10 @@ class Graph(object):
         return paths
 
     def find_all_paths_include(self, start, end, include):
+        """
+        Finds all possible paths from 'start' to 'end'
+        going through a given vertex.
+        """
         paths = self.find_all_paths(start, end)
         for key, path in enumerate(paths):
             if include not in path:
@@ -173,18 +185,40 @@ class Graph(object):
 
     def find_shortest_path(self, start, end):
         """
-        Finds shortest path from 'start' to 'end'.
+        Finds shortest path from 'start' to 'end'
+        using Dijkstra algorithm.
         """
-        if not self.weighted:
-            dist = {start: [start]}
-            q = deque(start)
-            while len(q):
-                at = q.popleft()
-                for next in self.__graph_dict[at].get_connections():
-                    if next not in dist:
-                        dist[next] = [dist[at], next]
-                        q.append(next)
-            return dist.get(end)
+        inf = float("inf")
+        # Function with compares distances of two Vertices.
+        com_func = lambda x, y: distances[x.id][0] < distances[y.id][0]
+
+        # Creates dictionary which contains vertex's distance and previous
+        # vertex.
+        distances = {vertex: (inf, None) for vertex in self.vertices()}
+        distances[start] = (0, None)
+        vertices = [vertex for vertex in self.__graph_dict.values()]
+        MinHeap.build(vertices, com_func)
+
+        # Finds shortest path from 'start' to all vertices.
+        while vertices:
+            cur_vertex = MinHeap.extract_root(vertices, com_func)
+
+            if distances[cur_vertex.id][0] == inf:
+                break
+
+            for neighbor, weight in cur_vertex.adjacent.items():
+                alternative_rout = distances[cur_vertex.id][0] + weight
+                if alternative_rout < distances[neighbor][0]:
+                    distances[neighbor] = (alternative_rout, cur_vertex.id)
+            MinHeap.build(vertices, com_func)
+
+        # Creates a shortest rout to 'end' vertex.
+        path = deque()
+        cur_vertex = end
+        while cur_vertex:
+            path.appendleft(cur_vertex)
+            cur_vertex = distances[cur_vertex][1]
+        return list(path), distances[end][0]
 
     def __generate_dict(self, graph_dict):
         """
@@ -230,15 +264,14 @@ class Graph(object):
 
 
 def main():
-    g = {"A": [("B",2), ("C",2),("D",4)],
-         "B": [("D",1),("K",3)],
-         "C": [("D",1),("K",3)],
-         "D": [("K",2)],
-         "F": []}
+    g = {"A": [("B",5),("C",3)],
+         "B": [("A",5),("C",1),("D",4)],
+         "C": [("A",3),("B",1),("D",6)],
+         "D": [("B",4),("C",6),("E",1)],
+         "E": [("D",1)]}
 
-    G = Graph(g, directed=True, weighted=True)
-    print(G.edges())
-    print(len(G.find_all_paths("A","K")))
+    G = Graph(g, weighted=True)
+    print(G.find_shortest_path("A", "E"))
 
 if __name__ == "__main__":
     main()
