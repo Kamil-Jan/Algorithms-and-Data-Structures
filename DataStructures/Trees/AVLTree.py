@@ -14,17 +14,18 @@ class TreeNode:
         self.parent = None # parent
         self.height = 1
 
-    def __str__(self):
-        string = f"Tree node: val={self.val}, height={self.height}"
-        return string
-
-    def display(self):
+    def display(self) -> str:
+        """
+        Returns string representation of a Tree.
+        """
         lines, _, _, _ = self._display_aux()
-        for line in lines:
-            print(line)
+        return '\n'.join(lines)
 
     def _display_aux(self):
-        """Returns list of strings, width, height, and horizontal coordinate of the root."""
+        """
+        Returns list of strings, width, height,
+        and horizontal coordinate of the root.
+        """
         # No child.
         if self.right is None and self.left is None:
             line = f"{self.val}"
@@ -68,6 +69,10 @@ class TreeNode:
         lines = [first_line, second_line] + [a + u * ' ' + b for a, b in zipped_lines]
         return lines, n + m + u, max(p, q) + 2, n + u // 2
 
+    def __str__(self):
+        string = f"Tree node: val={self.val}, height={self.height}"
+        return string
+
 
 class AVLTree:
     """
@@ -83,7 +88,7 @@ class AVLTree:
         else:
             self.root = None
 
-    def search(self, key, possible_parent=False):
+    def search(self, key: int, possible_parent=False) -> TreeNode:
         """
         Searches the key in a Tree.
         Returns: TreeNode
@@ -102,7 +107,7 @@ class AVLTree:
             return prev_node
         return None
 
-    def find_min(self):
+    def find_min(self) -> TreeNode:
         """
         Finds a minimal key in a Tree.
         Returns: TreeNode
@@ -113,7 +118,7 @@ class AVLTree:
                 return node
             node = node.left
 
-    def find_max(self):
+    def find_max(self) -> TreeNode:
         """
         Finds a maximum key in a Tree.
         Returns: TreeNode
@@ -124,7 +129,7 @@ class AVLTree:
                 return node
             node = node.right
 
-    def successor(self, key):
+    def successor(self, key: int) -> TreeNode:
         """
         Returns node with next-larger value of a given 'key'.
         """
@@ -142,7 +147,7 @@ class AVLTree:
                     tree_node = tree_node.parent
                 return
 
-    def predecessor(self, key):
+    def predecessor(self, key: int) -> TreeNode:
         """
         Returns node with next-smaller value of a given 'key'.
         """
@@ -160,7 +165,7 @@ class AVLTree:
                     tree_node = tree_node.parent
                 return
 
-    def insert(self, key):
+    def insert(self, key: int) -> None:
         """
         Inserts a given key into a Tree.
         """
@@ -170,7 +175,7 @@ class AVLTree:
         node = self._insert(key)
         self._inspect_changes(node)
 
-    def _insert(self, key):
+    def _insert(self, key: int) -> TreeNode:
         """
         Helper function for insertion.
         """
@@ -195,7 +200,7 @@ class AVLTree:
                     return node
                 node = node.left
 
-    def delete(self, key):
+    def delete(self, key: int) -> None:
         """
         Deletes a node with 'key' value from a Tree.
         """
@@ -203,7 +208,7 @@ class AVLTree:
         if node:
             self._delete(node)
 
-    def _delete(self, node):
+    def _delete(self, node: TreeNode) -> None:
         """
         Helper function for deletion.
         """
@@ -245,7 +250,7 @@ class AVLTree:
             return self._delete(next_larger)
         self._inspect_changes(new_node)
 
-    def _inspect_changes(self, node):
+    def _inspect_changes(self, node: TreeNode) -> None:
         """
         Updates heights and checks imbalanced nodes.
         """
@@ -259,7 +264,7 @@ class AVLTree:
             node.height = new_height
             self._inspect_changes(node.parent)
 
-    def get_height(self, node):
+    def get_height(self, node: TreeNode) -> int:
         """
         Returns node's height
         """
@@ -267,7 +272,7 @@ class AVLTree:
             return 0
         return node.height
 
-    def count_height(self, node):
+    def count_height(self, node: TreeNode) -> int:
         """
         Counts height of a given node.
         """
@@ -280,13 +285,13 @@ class AVLTree:
                 return node.right.height + 1
         return max(node.left.height, node.right.height) + 1
 
-    def get_bf(self, node):
+    def get_bf(self, node: TreeNode) -> int:
         """
         Counts balance factor of a given node.
         """
         return self.get_height(node.left) - self.get_height(node.right)
 
-    def _balance(self, node):
+    def _balance(self, node: TreeNode) -> None:
         """
         Decides how subtree should be rotated.
         """
@@ -301,7 +306,7 @@ class AVLTree:
             else: # Right-Left heavy
                 self._RL_rotate(node)
 
-    def _LL_rotate(self, node):
+    def _LL_rotate(self, node: TreeNode) -> None:
         """
         Left-Left rotation.
 
@@ -331,7 +336,7 @@ class AVLTree:
         B.height = self.count_height(B)
         self._inspect_changes(B.parent)
 
-    def _RR_rotate(self, node):
+    def _RR_rotate(self, node: TreeNode) -> None:
         """
         Right-Right rotation.
 
@@ -361,7 +366,7 @@ class AVLTree:
         B.height = self.count_height(B)
         self._inspect_changes(B.parent)
 
-    def _LR_rotate(self, node):
+    def _LR_rotate(self, node: TreeNode) -> None:
         """
         Left-Right rotation.
 
@@ -396,7 +401,7 @@ class AVLTree:
 
         self._inspect_changes(C.parent)
 
-    def _RL_rotate(self, node):
+    def _RL_rotate(self, node: TreeNode) -> None:
         """
         Right-Left rotation.
 
@@ -431,6 +436,9 @@ class AVLTree:
 
         self._inspect_changes(C.parent)
 
+    def __str__(self):
+        return self.root.display()
+
 
 def timer(func):
     """
@@ -442,23 +450,6 @@ def timer(func):
         print(f"Running time: {time.time() - start}")
         return value
     return wrapper
-
-def average_time(func=None, *, num_times=3):
-    """
-    Prints average running time of a function.
-    """
-    def decorator_repeat(func):
-        def wrapper_repeat(*args, **kwargs):
-            start = time.time()
-            for _ in range(num_times):
-                value = func(*args, **kwargs)
-            print(f"Average running time: {(time.time() - start) / num_times}")
-            return value
-        return wrapper_repeat
-
-    if not func:
-        return decorator_repeat
-    return decorator_repeat(func)
 
 @timer
 def main():
