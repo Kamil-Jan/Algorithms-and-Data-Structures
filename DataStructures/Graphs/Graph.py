@@ -1,5 +1,9 @@
 import sys
 sys.path.insert(1, "..\\Trees")
+
+import networkx as nx
+import matplotlib.pyplot as plt
+import random
 from Heap import MinHeap
 from collections import deque
 
@@ -220,6 +224,24 @@ class Graph(object):
             cur_vertex = distances[cur_vertex][1]
         return list(path), distances[end][0]
 
+    def draw(self):
+        """
+        Draws a graph using networkx and matplotlib libraries.
+        """
+        if self.directed:
+            G = nx.DiGraph()
+        else:
+            G = nx.Graph()
+        edge_labels = self.edges()
+        edges = list(edge_labels.keys())
+        G.add_edges_from(edges)
+
+        layout = nx.spring_layout(G)
+        nx.draw(G, layout)
+        nx.draw_networkx_labels(G, pos=layout, font_color="white")
+        nx.draw_networkx_edge_labels(G, pos=layout, edge_labels=edge_labels)
+        plt.show()
+
     def __generate_dict(self, graph_dict):
         """
         Generates self.__graph_dict from 'graph_dict'.
@@ -270,8 +292,8 @@ def main():
          "D": [("B",4),("C",6),("E",1)],
          "E": [("D",1)]}
 
-    G = Graph(g, weighted=True)
-    print(G.find_shortest_path("A", "E"))
+    G = Graph(g, directed=True, weighted=True)
+    G.draw()
 
 if __name__ == "__main__":
     main()
