@@ -2,7 +2,7 @@ import sys
 sys.path.insert(1, "..\\Trees")
 
 import networkx as nx
-import matplotlib.pyplot as plt
+from matplotlib.pyplot import show
 import random
 from Heap import MinHeap
 from collections import deque
@@ -190,7 +190,8 @@ class Graph(object):
     def find_shortest_path(self, start, end):
         """
         Finds shortest path from 'start' to 'end'
-        using Dijkstra algorithm.
+        using Dijkstra algorithm. May not work with
+        negative weight edges.
         """
         inf = float("inf")
         # Function with compares distances of two Vertices.
@@ -224,6 +225,38 @@ class Graph(object):
             cur_vertex = distances[cur_vertex][1]
         return list(path), distances[end][0]
 
+    def bellman_ford(self, start, end):
+        """
+        Finds shortest path from 'start' to 'end'
+        using Bellman Ford algorithm. May not work with
+        negative weight cycles.
+        """
+        # Creates dictionary which contains vertex's distance and previous
+        # vertex.
+        distances = {vertex: (float("inf"), None) for vertex in self.vertices()}
+        distances[start] = (0, None)
+        edges = self.edges()
+        n = len(self.vertices())
+        for _ in range(n - 1):
+            change_num = 0
+            for edge, weight in edges.items():
+                from_vertex = edge[0]
+                to_vertex = edge[1]
+                new_cost = distances[from_vertex][0] + weight
+                if new_cost < distances[to_vertex][0]:
+                    change_num += 1
+                    distances[to_vertex] = (new_cost, from_vertex)
+            if change_num == 0:
+                break
+
+        # Creates a shortest rout to 'end' vertex.
+        path = deque()
+        cur_vertex = end
+        while cur_vertex:
+            path.appendleft(cur_vertex)
+            cur_vertex = distances[cur_vertex][1]
+        return list(path), distances[end][0]
+
     def draw(self):
         """
         Draws a graph using networkx and matplotlib libraries.
@@ -240,7 +273,7 @@ class Graph(object):
         nx.draw(G, layout)
         nx.draw_networkx_labels(G, pos=layout, font_color="white")
         nx.draw_networkx_edge_labels(G, pos=layout, edge_labels=edge_labels)
-        plt.show()
+        show()
 
     def __generate_dict(self, graph_dict):
         """
@@ -264,15 +297,9 @@ class Graph(object):
         with one or two vertices.
         """
         edges = dict()
-        if not self.directed:
-            for vertex in self.__graph_dict:
-                for neighbour, w in self.__graph_dict[vertex].get_weighted_connections():
-                    if (neighbour, vertex) not in edges:
-                        edges[(vertex, neighbour)] = w
-        else:
-            for vertex in self.__graph_dict:
-                for neighbour, w in self.__graph_dict[vertex].get_weighted_connections():
-                    edges[(vertex, neighbour)] = w
+        for vertex in self.__graph_dict:
+            for neighbour, w in self.__graph_dict[vertex].get_weighted_connections():
+                edges[(vertex, neighbour)] = w
         return edges
 
     def __str__(self):
