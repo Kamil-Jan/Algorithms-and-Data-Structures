@@ -11,14 +11,9 @@ class TreeNode:
         self.left = left
         self.right = right
 
-    def __str__(self):
-        string = f"Tree node: val={self.val}"
-        return string
-
     def display(self):
         lines, _, _, _ = self._display_aux()
-        for line in lines:
-            print(line)
+        return '\n'.join(lines)
 
     def _display_aux(self):
         """Returns list of strings, width, height, and horizontal coordinate of the root."""
@@ -65,6 +60,10 @@ class TreeNode:
         lines = [first_line, second_line] + [a + u * ' ' + b for a, b in zipped_lines]
         return lines, n + m + u, max(p, q) + 2, n + u // 2
 
+    def __str__(self):
+        string = f"Tree node: val={self.val}"
+        return string
+
 
 class BST(object):
     """
@@ -72,25 +71,32 @@ class BST(object):
     Functions: insert, search, find_min, find_max
     Attributes: root
     """
-    def __init__(self, root):
-        self.root = TreeNode(root)
+    def __init__(self, root=None):
+        if root:
+            self.root = TreeNode(root)
+        else:
+            self.root = None
 
-    def search(self, number):
+    def search(self, key: int, possible_parent=False) -> TreeNode:
         """
         Searches the number in a Tree.
         Returns: TreeNode
         """
-        node = self.root
+        node = prev_node = self.root
         while node:
-            if number > node.val:
+            if key > node.val:
+                prev_node = node
                 node = node.right
-            elif number == node.val:
+            elif key == node.val:
                 return node
             else:
+                prev_node = node
                 node = node.left
+        if possible_parent:
+            return prev_node
         return None
 
-    def find_min(self):
+    def find_min(self) -> TreeNode:
         """
         Finds a minimal number in a Tree.
         Returns: TreeNode
@@ -101,7 +107,7 @@ class BST(object):
                 return node
             node = node.left
 
-    def find_max(self):
+    def find_max(self) -> TreeNode:
         """
         Finds a maximum number in a Tree.
         Returns: TreeNode
@@ -112,13 +118,16 @@ class BST(object):
                 return node
             node = node.right
 
-    def insert(self, number):
+    def insert(self, key):
         """
         Inserts a given number into a BST.
         """
-        self.__insert(number)
+        if not self.root:
+            self.root = TreeNode(val=key)
+            return
+        self._insert(key)
 
-    def __insert(self, number):
+    def _insert(self, key):
         """
         Inserts a given number into a BST.
 
@@ -130,41 +139,27 @@ class BST(object):
         node = self.root
         while True:
             # Check if a number is greater than node.
-            if number >= node.val:
+            if key == node.val:
+                return
+            elif key > node.val:
                 # Check if a node.right is None
                 if not node.right:
                     # node.right is a leaf
-                    node.right = TreeNode(val=number)
+                    node.right = TreeNode(val=key)
                     break
                 node = node.right
             else:
                 # Check if a node.left is None
                 if not node.left:
                     # node.left is a leaf
-                    node.left = TreeNode(val=number)
+                    node.left = TreeNode(val=key)
                     break
                 node = node.left
 
-    def display(self):
-        """
-        Displays a Tree.
-        """
-        def levelOrderTraversal(node, level):
-            if not node:
-                return
-            try:
-                orderTraversal[level].append(node.val)
-            except:
-                orderTraversal.append([node.val])
-            levelOrderTraversal(node.left, level + 1)
-            levelOrderTraversal(node.right, level + 1)
-
-        orderTraversal = [[self.root.val]]
-        levelOrderTraversal(self.root.left, 1)
-        levelOrderTraversal(self.root.right, 1)
-
-        return orderTraversal
-
+    def __str__(self):
+        if self.root:
+            return self.root.display()
+        return "-"
 
 def timer(func):
     def wrapper(*args, **kwargs):
@@ -176,8 +171,11 @@ def timer(func):
 
 @timer
 def main():
-    t = BST(0)
-    [t.insert(i) for i in range(10)]
+    t = BST()
+    keys = [20, 10, 30, 40]
+    for key in keys:
+        t.insert(key)
+    print(t)
 
 if __name__ == "__main__":
     main()

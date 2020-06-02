@@ -437,7 +437,9 @@ class AVLTree:
         self._inspect_changes(C.parent)
 
     def __str__(self):
-        return self.root.display()
+        if self.root:
+            return self.root.display()
+        return "-"
 
 
 def timer(func):
