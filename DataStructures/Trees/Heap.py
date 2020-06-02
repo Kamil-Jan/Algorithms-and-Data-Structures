@@ -30,7 +30,7 @@ class MaxHeap:
 
     @classmethod
     def sort(cls, array, com_func=lambda x, y: x > y):
-        cls.build(array)
+        cls.build(array, com_func)
         for i in range(len(array) - 1, -1, -1):
             array[0], array[i] = array[i], array[0]
             cls.heapify(array, i, 0, com_func)
@@ -49,6 +49,64 @@ class MaxHeap:
         root = arr.pop()
         cls.heapify(arr, len(arr), 0, com_func)
         return root
+
+    @classmethod
+    def display(cls, arr):
+        try:
+            lines, _, _, _ = cls._display_aux(arr, 0)
+            for line in lines:
+                print(line)
+        except IndexError:
+            print("-")
+
+    @classmethod
+    def _display_aux(cls, arr, i=0):
+        n = len(arr)
+        l = 2 * i + 1 # left child
+        r = 2 * i + 2 # right child
+        left = l < n
+        right = r < n
+        # No child.
+        if not right and not left:
+            line = f"{arr[i]}"
+            width = len(line)
+            height = 1
+            middle = width // 2
+            return [line], width, height, middle
+
+        # Only left child.
+        if not right:
+            lines, n, p, x = cls._display_aux(arr, l)
+            s = f"{arr[i]}"
+            u = len(s)
+            first_line = (x + 1) * ' ' + (n - x - 1) * '_' + s
+            second_line = x * ' ' + '/' + (n - x - 1 + u) * ' '
+            shifted_lines = [line + u * ' ' for line in lines]
+            return [first_line, second_line] + shifted_lines, n + u, p + 2, n + u // 2
+
+        # Only right child.
+        if not left:
+            lines, n, p, x = cls._display_aux(arr, r)
+            s = f"{arr[i]}"
+            u = len(s)
+            first_line = s + x * '_' + (n - x) * ' '
+            second_line = (u + x) * ' ' + '\\' + (n - x - 1) * ' '
+            shifted_lines = [u * ' ' + line for line in lines]
+            return [first_line, second_line] + shifted_lines, n + u, p + 2, u // 2
+        # Two children.
+        left, n, p, x = cls._display_aux(arr, l)
+        right, m, q, y = cls._display_aux(arr, r)
+        s = f"{arr[i]}"
+        u = len(s)
+        first_line = (x + 1) * ' ' + (n - x - 1) * '_' + s + y * '_' + (m - y) * ' '
+        second_line = x * ' ' + '/' + (n - x - 1 + u + y) * ' ' + '\\' + (m - y - 1) * ' '
+        if p < q:
+            left += [n * ' '] * (q - p)
+        elif q < p:
+            right += [m * ' '] * (p - q)
+        zipped_lines = zip(left, right)
+        lines = [first_line, second_line] + [a + u * ' ' + b for a, b in zipped_lines]
+        return lines, n + m + u, max(p, q) + 2, n + u // 2
 
 
 class MinHeap(MaxHeap):
