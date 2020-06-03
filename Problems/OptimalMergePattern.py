@@ -4,7 +4,7 @@ from Heap import MinHeap as mh
 
 
 
-def MergeLists(lists):
+def MergeLists(lists, merge_com_func=lambda x, y: x < y):
     com_func = lambda x, y: len(x) < len(y)
 
     mh.build(lists, com_func)
@@ -15,12 +15,13 @@ def MergeLists(lists):
         m = len(smallest_list)
         n = len(second_smallest_list)
 
-        mh.insert(Merge(smallest_list, second_smallest_list, m, n), lists, com_func)
+        new_list = Merge(smallest_list, second_smallest_list,
+                         m, n, merge_com_func)
+        mh.insert(new_list, lists, com_func)
         cost += m + n
-    print(cost)
     return lists[0]
 
-def Merge(A, B, m, n):
+def Merge(A, B, m, n, merge_com_func):
     """
     Merging two sorted lists.
     """
@@ -28,7 +29,7 @@ def Merge(A, B, m, n):
     arr = []
 
     while i < m and j < n:
-        if A[i] <= B[j]:
+        if merge_com_func(A[i], B[j]):
             arr.append(A[i])
             i += 1
         else:
