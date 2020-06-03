@@ -83,7 +83,7 @@ class AVLTree:
               successor, predecessor
     """
     def __init__(self, root=None):
-        if root:
+        if root != None:
             self.root = TreeNode(val=root)
         else:
             self.root = None
@@ -182,23 +182,23 @@ class AVLTree:
         node = self.root
         while True:
             # Check if a key is greater than node.
-            if key == node.val:
-                # print(f"{key}: already in a Tree.")
-                return
-            elif key > node.val:
+            if key > node.val:
                 if not node.right:
                     # node.right is a leaf
                     node.right = TreeNode(val=key)
                     node.right.parent = node
                     return node
                 node = node.right
-            else:
+            elif key < node.val:
                 if not node.left:
                     # node.left is a leaf
                     node.left = TreeNode(val=key)
                     node.left.parent = node
                     return node
                 node = node.left
+            else:
+                # print(f"{key}: already in a Tree.")
+                return
 
     def delete(self, key: int) -> None:
         """
@@ -256,9 +256,9 @@ class AVLTree:
         """
         if not node:
             return
-        if abs(self.get_bf(node)) > 1:
-            self._balance(node)
-            return
+        bf = self.get_bf(node)
+        if abs(bf) > 1:
+            return self._balance(node, bf)
         new_height = self.count_height(node)
         if new_height != node.height:
             node.height = new_height
@@ -276,13 +276,12 @@ class AVLTree:
         """
         Counts height of a given node.
         """
-        if node.left == None or node.right == None:
+        if not node.left or not node.right:
             if node.left == node.right:
                 return 1
             if node.left and not node.right:
                 return node.left.height + 1
-            if not node.left and node.right:
-                return node.right.height + 1
+            return node.right.height + 1
         return max(node.left.height, node.right.height) + 1
 
     def get_bf(self, node: TreeNode) -> int:
@@ -291,20 +290,18 @@ class AVLTree:
         """
         return self.get_height(node.left) - self.get_height(node.right)
 
-    def _balance(self, node: TreeNode) -> None:
+    def _balance(self, node: TreeNode, bf: int) -> None:
         """
         Decides how subtree should be rotated.
         """
-        if self.get_bf(node) == 2: # Left-heavy
+        if bf > 0: # Left-heavy
             if self.get_bf(node.left) >= 0:
-                self._LL_rotate(node) # Left-Left heavy
-            else: # Left-Right heavy
-                self._LR_rotate(node)
-        elif self.get_bf(node) == -2: # Right-heavy
+                return self._LL_rotate(node) # Left-Left heavy
+            return self._LR_rotate(node) # Left-Right heavy
+        else: # Right-heavy
             if self.get_bf(node.right) <= 0: # Right-Right heavy
-                self._RR_rotate(node)
-            else: # Right-Left heavy
-                self._RL_rotate(node)
+                return self._RR_rotate(node)
+            return self._RL_rotate(node) # Right-Left heavy
 
     def _LL_rotate(self, node: TreeNode) -> None:
         """
@@ -442,6 +439,21 @@ class AVLTree:
         return "-"
 
 
+def average_time(func=None, num_times=3):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            time_sum = 0
+            for _ in range(num_times):
+                start = time.time()
+                value = func(*args, **kwargs)
+                time_sum += time.time() - start
+            print(f"Average running time: {time_sum / num_times}")
+            return value
+        return wrapper
+    if not func:
+        return decorator
+    return decorator(func)
+
 def timer(func):
     """
     Print running time of a function.
@@ -480,3 +492,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
