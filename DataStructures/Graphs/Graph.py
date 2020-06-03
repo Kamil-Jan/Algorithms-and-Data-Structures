@@ -1,9 +1,8 @@
 import sys
-sys.path.insert(1, "..\\Trees")
-
 import networkx as nx
-from matplotlib.pyplot import show
 import random
+sys.path.insert(1, "..\\Trees")
+from matplotlib.pyplot import show
 from Heap import MinHeap
 from collections import deque
 
