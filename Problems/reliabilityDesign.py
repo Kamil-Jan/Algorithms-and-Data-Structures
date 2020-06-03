@@ -11,7 +11,7 @@ def design(devices, costs, reliabilities, C):
 
     s = [(1, 0, dict())]
     for i, device in enumerate(devices):
-        device_list = deque()
+        device_consider_list = deque()
         costs_sum -= costs[i]
         money_for_next_devices = C - costs_sum
         for device_quantity in range(1, device_maximum_quantity[i] + 1):
@@ -31,15 +31,15 @@ def design(devices, costs, reliabilities, C):
                 new_devices_quantity[device] = device_quantity
 
                 stage_list.append((new_reliability, new_total_cost, new_devices_quantity))
-            device_list.append(stage_list)
+            device_consider_list.append(stage_list)
 
         merge_com_func = lambda x, y: x[0] < y[0]
-        s = MergeLists(device_list, merge_com_func)
+        s = MergeLists(device_consider_list, merge_com_func)
         # check contradictions
         i = 0
         while i < len(s) - 1:
             # cost of every element should be less than
-            # cost next element.
+            # cost of next element.
             if s[i][1] > s[i + 1][1]:
                 del s[i]
                 i -= 1
